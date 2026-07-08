@@ -1,0 +1,41 @@
+{% extends "library/base.html" %}
+{% block title %}Manage Requests{% endblock %}
+{% block content %}
+<h4 class="mb-3">Pending Requests</h4>
+<table class="table table-bordered bg-white">
+    <thead><tr><th>Type</th><th>Book</th><th>Student</th><th>Requested On</th><th>Actions</th></tr></thead>
+    <tbody>
+    {% for r in pending %}
+        <tr>
+            <td>{{ r.get_request_type_display }}</td>
+            <td>{{ r.book.name }}</td>
+            <td>{{ r.student.first_name|default:r.student.username }}</td>
+            <td>{{ r.requested_at|date:"d M Y" }}</td>
+            <td>
+                <a href="{% url 'resolve_request' r.pk 'approve' %}" class="btn btn-sm btn-outline-success">Approve</a>
+                <a href="{% url 'resolve_request' r.pk 'reject' %}" class="btn btn-sm btn-outline-danger">Reject</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="5" class="text-center">No pending requests.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<h5 class="mt-4 mb-3">Recently Resolved</h5>
+<table class="table table-bordered bg-white">
+    <thead><tr><th>Type</th><th>Book</th><th>Student</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for r in resolved %}
+        <tr>
+            <td>{{ r.get_request_type_display }}</td>
+            <td>{{ r.book.name }}</td>
+            <td>{{ r.student.first_name|default:r.student.username }}</td>
+            <td>{% if r.status == "approved" %}<span class="badge bg-success">Approved</span>{% else %}<span class="badge bg-secondary">Rejected</span>{% endif %}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="4" class="text-center">No resolved requests yet.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

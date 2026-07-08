@@ -1,0 +1,127 @@
+{% extends "library/base.html" %}
+{% block title %}Browse Books{% endblock %}
+{% block content %}
+<h4 class="mb-3">Browse Books</h4>
+
+<!-- Advanced Search & Filter Form -->
+<div class="card p-4 mb-4 bg-light">
+    <form method="get" class="row g-2">
+        <div class="col-md-3">
+            <label class="form-label">Search</label>
+            <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Title, author, or book no...">
+        </div>
+        
+        <div class="col-md-2">
+            <label class="form-label">Category</label>
+            <select name="category" class="form-select">
+                <option value="">All</option>
+                {% for c in categories %}
+                <option value="{{ c.id }}" {% if selected_category == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="col-md-2">
+            <label class="form-label">Author</label>
+            <select name="author" class="form-select">
+                <option value="">All</option>
+                {% for a in authors %}
+                <option value="{{ a.id }}" {% if selected_author == a.id|stringformat:"s" %}selected{% endif %}>{{ a.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="col-md-2">
+            <label class="form-label">Availability</label>
+            <select name="availability" class="form-select">
+                <option value="">All</option>
+                <option value="available" {% if selected_availability == "available" %}selected{% endif %}>Available</option>
+                <option value="unavailable" {% if selected_availability == "unavailable" %}selected{% endif %}>Unavailable</option>
+            </select>
+        </div>
+        
+        <div class="col-md-2">
+            <label class="form-label">Sort By</label>
+            <select name="sort" class="form-select">
+                <option value="name" {% if selected_sort == "name" %}selected{% endif %}>Title (A-Z)</option>
+                <option value="price_low" {% if selected_sort == "price_low" %}selected{% endif %}>Price (Low-High)</option>
+                <option value="price_high" {% if selected_sort == "price_high" %}selected{% endif %}>Price (High-Low)</option>
+                <option value="newest" {% if selected_sort == "newest" %}selected{% endif %}>Newest</option>
+            </select>
+        </div>
+        
+        <div class="col-md-1 d-flex align-items-end">
+            <button class="btn btn-primary w-100" type="submit">Search</button>
+        </div>
+    </form>
+</div>
+
+<!-- Results Summary -->
+<div class="alert alert-info mb-3">
+    Found <strong>{{ total_results }}</strong> book(s) matching your filters
+    {% if q %} for "<strong>{{ q }}</strong>"{% endif %}
+</div>
+
+<!-- Books Grid -->
+<div class="row g-3">
+    {% for b in page_obj %}
+    <div class="col-md-4">
+        <div class="card h-100 p-3 shadow-sm" style="transition: transform 0.2s;">
+            {% if b.cover %}
+                <img src="{{ b.cover.url }}" class="rounded mb-2" style="height:160px; object-fit:cover; cursor:pointer;">
+            {% else %}
+                <div class="bg-light rounded mb-2 d-flex align-items-center justify-content-center" style="height:160px;">
+                    <span class="text-muted">No cover</span>
+                </div>
+            {% endif %}
+            <h6 class="mb-1">{{ b.name }}</h6>
+            <p class="small text-muted mb-1">by <strong>{{ b.author.name }}</strong></p>
+            <p class="small text-muted mb-1">Category: {{ b.category.name }}</p>
+            <p class="small mb-2"><span class="badge bg-secondary">Book No: {{ b.book_no }}</span></p>
+            <p class="small mb-2"><strong>₹{{ b.price }}</strong></p>
+            
+            <!-- Availability Badge -->
+            {% if b.copies_available > 0 %}
+                <span class="badge bg-success mb-2">{{ b.copies_available }} available</span>
+            {% else %}
+                <span class="badge bg-danger mb-2">Unavailable</span>
+            {% endif %}
+            
+            <!-- Action Buttons -->
+            <div class="d-flex gap-2 mt-auto">
+                <a href="{% url 'book_detail' b.pk %}" class="btn btn-sm btn-outline-secondary flex-grow-1">View Details</a>
+                {% if b.pdf_file %}
+                    <a href="{% url 'download_book_pdf' b.pk %}" class="btn btn-sm btn-outline-info" title="Download PDF">📥</a>
+                {% endif %}
+            </div>
+            
+            <!-- Borrow/Reserve Button -->
+            {% if b.copies_available > 0 and user.is_authenticated and not user.is_staff %}
+                <a href="{% url 'reserve_book' b.pk %}" class="btn btn-sm btn-primary w-100 mt-2">Borrow</a>
+            {% elif b.copies_available == 0 and user.is_authenticated and not user.is_staff %}
+                <a href="{% url 'reserve_book' b.pk %}" class="btn btn-sm btn-outline-warning w-100 mt-2">Reserve</a>
+            {% elif not user.is_authenticated %}
+                <p class="text-muted small"><a href="{% url 'index' %}">Login to borrow</a></p>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+        <div class="col-12">
+            <p class="text-center text-muted py-5">No books match your search criteria. Try adjusting your filters.</p>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% include "library/_pagination.html" with page_obj=page_obj qs=qs %}
+
+<style>
+    .card {
+        border: 1px solid #e0e0e0;
+    }
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    }
+</style>
+{% endblock %}

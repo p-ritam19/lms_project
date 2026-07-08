@@ -1,0 +1,23 @@
+{% extends "library/base.html" %}
+{% block title %}Defaulter List{% endblock %}
+{% block content %}
+<h4 class="mb-3">Defaulter List <span class="text-muted small">(overdue books)</span></h4>
+<table class="table table-bordered bg-white">
+    <thead><tr><th>Book</th><th>Student</th><th>Email</th><th>Due Date</th><th>Days Overdue</th><th>Fine Due</th><th></th></tr></thead>
+    <tbody>
+    {% for i in overdue %}
+        <tr>
+            <td>{{ i.book.name }}</td>
+            <td>{{ i.student.first_name|default:i.student.username }}</td>
+            <td>{{ i.student.email }}</td>
+            <td>{{ i.due_date }}</td>
+            <td><span class="badge bg-danger">{{ i.days_overdue }} days</span></td>
+            <td>₹{{ i.calculate_fine }}</td>
+            <td><a href="{% url 'return_book' i.pk %}" class="btn btn-sm btn-outline-success" onclick="return confirm('Mark as returned?')">Mark Returned</a></td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="7" class="text-center">No overdue books right now. 🎉</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

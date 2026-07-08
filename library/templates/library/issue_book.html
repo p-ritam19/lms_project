@@ -1,0 +1,41 @@
+{% extends "library/base.html" %}
+{% block title %}Issue Book{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-5">
+        <div class="card p-4">
+            <h4 class="mb-4">Issue a Book</h4>
+            <form method="post">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="mb-3">
+                    <label class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary">Issue Book</button>
+            </form>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <h4 class="mb-4">Currently Issued Books</h4>
+        <table class="table table-bordered bg-white">
+            <thead><tr><th>Book</th><th>Student</th><th>Issue Date</th><th>Due Date</th><th>Fine</th><th></th></tr></thead>
+            <tbody>
+            {% for i in all_issued %}
+                <tr>
+                    <td>{{ i.book.name }}</td>
+                    <td>{{ i.student.first_name|default:i.student.username }}</td>
+                    <td>{{ i.issue_date|date:"d M Y" }}</td>
+                    <td>{{ i.due_date }}</td>
+                    <td>{% if i.calculate_fine %}<span class="text-danger">₹{{ i.calculate_fine }}</span>{% else %}—{% endif %}</td>
+                    <td><a href="{% url 'return_book' i.pk %}" class="btn btn-sm btn-outline-success" onclick="return confirm('Mark as returned?')">Mark Returned</a></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="6" class="text-center">No books currently issued.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

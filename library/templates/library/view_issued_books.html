@@ -1,0 +1,41 @@
+{% extends "library/base.html" %}
+{% block title %}My Issued Books{% endblock %}
+{% block content %}
+<h4 class="mb-3">My Issued Books</h4>
+<table class="table table-bordered bg-white">
+    <thead><tr><th>Book</th><th>Author</th><th>Issue Date</th><th>Due Date</th><th>Status</th><th>Fine</th><th>Actions</th></tr></thead>
+    <tbody>
+    {% for i in issued %}
+        <tr>
+            <td>{{ i.book.name }}</td>
+            <td>{{ i.book.author.name }}</td>
+            <td>{{ i.issue_date|date:"d M Y" }}</td>
+            <td>{{ i.due_date }}</td>
+            <td>
+                {% if i.status == 1 %}
+                    <span class="badge {% if i.is_overdue %}bg-danger{% else %}bg-success{% endif %}">
+                        {% if i.is_overdue %}Overdue{% else %}Issued{% endif %}
+                    </span>
+                {% else %}
+                    <span class="badge bg-secondary">Returned</span>
+                {% endif %}
+            </td>
+            <td>{% if i.calculate_fine %}<span class="text-danger">₹{{ i.calculate_fine }}</span>{% else %}—{% endif %}</td>
+            <td>
+                <div class="btn-group" role="group">
+                    {% if i.status == 1 %}
+                        <a href="{% url 'request_renewal' i.pk %}" class="btn btn-sm btn-outline-primary">Renew</a>
+                    {% endif %}
+                   {% if i.book.pdf_file %}
+                       <a href="{% url 'download_book_pdf' i.book.pk %}" class="btn btn-sm btn-outline-info" title="Download PDF">📥 Download</a>
+                   {% endif %}
+                   <a href="{% url 'book_detail' i.book.pk %}" class="btn btn-sm btn-outline-success">Rate & Review</a>
+               </div>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="7" class="text-center">No books issued yet.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

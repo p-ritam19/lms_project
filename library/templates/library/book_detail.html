@@ -1,0 +1,199 @@
+{% extends "library/base.html" %}
+{% block title %}{{ book.name }} - Details & Reviews{% endblock %}
+{% block content %}
+<div class="row">
+    <!-- Book Information -->
+    <div class="col-md-4">
+        <div class="card p-4">
+            {% if book.cover %}
+                <img src="{{ book.cover.url }}" class="img-fluid rounded mb-3" style="height:300px; object-fit:cover;">
+            {% else %}
+                <div class="bg-light rounded mb-3 d-flex align-items-center justify-content-center" style="height:300px;">
+                    <span class="text-muted">No cover</span>
+                </div>
+            {% endif %}
+            
+            <h5 class="mb-2">{{ book.name }}</h5>
+            <p class="text-muted">
+                <strong>Author:</strong> {{ book.author.name }}<br>
+                <strong>Category:</strong> {{ book.category.name }}<br>
+                <strong>Book No:</strong> {{ book.book_no }}<br>
+                <strong>Price:</strong> ₹{{ book.price }}
+            </p>
+            
+            <!-- Availability -->
+            {% if book.copies_available > 0 %}
+                <span class="badge bg-success mb-3 d-block">{{ book.copies_available }} copies available</span>
+            {% else %}
+                <span class="badge bg-danger mb-3 d-block">Unavailable</span>
+            {% endif %}
+            
+            <!-- Download PDF Button -->
+            {% if book.pdf_file %}
+                <a href="{% url 'download_book_pdf' book.id %}" class="btn btn-outline-info btn-sm w-100 mb-3">
+                    📥 Download PDF
+                </a>
+            {% endif %}
+            
+            <!-- Rating Display -->
+            {% if avg_rating %}
+                <div class="card p-3 mb-3 bg-light">
+                    <strong>Rating:</strong><br>
+                    <div style="font-size: 24px; color: #ffc107;">
+                        {% for i in "12345" %}
+                            {% if i|add:0 <= avg_rating %}⭐{% elif i|add:0.5 <= avg_rating %}½⭐{% else %}☆{% endif %}
+                        {% endfor %}
+                    </div>
+                    <small class="text-muted">{{ avg_rating|floatformat:1 }}/5 ({{ total_ratings }} ratings)</small>
+                </div>
+            {% else %}
+                <div class="card p-3 mb-3 bg-light">
+                    <small class="text-muted">No ratings yet. Be the first to rate this book!</small>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Reviews & Rating Section -->
+    <div class="col-md-8">
+        <!-- Rate This Book -->
+        <div class="card p-4 mb-4">
+            <h5 class="mb-3">⭐ Rate This Book</h5>
+            
+            {% if user.is_authenticated %}
+                <form method="post" class="d-flex align-items-center gap-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="rate">
+                    
+                    <div class="rating-input">
+                        {% for i in "12345" %}
+                            <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" 
+                                {% if user_rating and user_rating.rating == i %}checked{% endif %}
+                                style="display:none;">
+                            <label for="star{{ i }}" style="font-size: 28px; cursor: pointer; color: #ddd; margin: 0 2px;">★</label>
+                        {% endfor %}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Submit Rating</button>
+                    
+                    {% if user_rating %}
+                        <small class="text-muted">Your rating: <strong>{{ user_rating.rating }}★</strong></small>
+                    {% endif %}
+                </form>
+                
+                <style>
+                    .rating-input label:hover,
+                    .rating-input label:hover ~ label,
+                    .rating-input input:checked ~ label {
+                        color: #ffc107;
+                    }
+                </style>
+            {% else %}
+                <p class="text-muted"><a href="{% url 'index' %}">Login</a> to rate this book</p>
+            {% endif %}
+        </div>
+        
+        <!-- Write a Review -->
+        <div class="card p-4 mb-4">
+            <h5 class="mb-3">📝 Write a Review</h5>
+            
+            {% if user.is_authenticated %}
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="review">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Rating</label>
+                        <div>
+                            {% for choice_val, choice_label in form.rating.field.choices %}
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="rating" id="rating{{ choice_val }}" 
+                                           value="{{ choice_val }}" required>
+                                    <label class="form-check-label" for="rating{{ choice_val }}">
+                                        {{ choice_label }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Review Title</label>
+                        <input type="text" name="title" class="form-control" placeholder="Give your review a title..." 
+                               maxlength="200" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Your Review</label>
+                        <textarea name="content" class="form-control" rows="4" 
+                                  placeholder="Share your thoughts about this book..." required></textarea>
+                    </div>
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <button type="submit" class="btn btn-primary">Post Review</button>
+                    <small class="text-muted d-block mt-2">Your review will appear after admin approval</small>
+                </form>
+            {% else %}
+                <p class="text-muted"><a href="{% url 'index' %}">Login</a> to write a review</p>
+            {% endif %}
+        </div>
+        
+        <!-- Display Reviews -->
+        <div class="card p-4">
+            <h5 class="mb-4">📚 Reviews ({{ reviews.count }})</h5>
+            
+            {% if reviews %}
+                <div class="reviews-list">
+                    {% for review in reviews %}
+                        <div class="border-bottom pb-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ review.title }}</h6>
+                                    <small class="text-muted">
+                                        <strong>{{ review.user.first_name|default:review.user.username }}</strong> 
+                                        — {{ review.created_at|date:"M d, Y" }}
+                                        <span style="color: #ffc107; margin-left: 10px;">
+                                            {% for i in "12345" %}
+                                                {% if i|add:0 <= review.rating %}⭐{% else %}☆{% endif %}
+                                            {% endfor %}
+                                        </span>
+                                    </small>
+                                </div>
+                            </div>
+                            <p class="mt-2 mb-0">{{ review.content }}</p>
+                            {% if review.helpful_count > 0 %}
+                                <small class="text-success mt-2 d-block">👍 {{ review.helpful_count }} found this helpful</small>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted text-center py-4">No reviews yet. Be the first to review this book!</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .reviews-list {
+        max-height: 600px;
+        overflow-y: auto;
+    }
+    .rating-input label {
+        transition: all 0.2s;
+    }
+</style>
+{% endblock %}

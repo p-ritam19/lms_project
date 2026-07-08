@@ -1,0 +1,36 @@
+{% extends "library/base.html" %}
+{% block title %}Manage Books{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>Manage Books</h4>
+    <a href="{% url 'add_book' %}" class="btn btn-primary btn-sm">+ Add New Book</a>
+</div>
+<form method="get" class="mb-3 d-flex" style="max-width:400px">
+    <input type="text" name="q" value="{{ q }}" class="form-control me-2" placeholder="Search by title, author, or book no...">
+    <button class="btn btn-outline-primary">Search</button>
+</form>
+<table class="table table-bordered bg-white align-middle">
+    <thead><tr><th>Cover</th><th>Book No</th><th>Name</th><th>Author</th><th>Category</th><th>Price</th><th>Copies</th><th>QR</th><th>Actions</th></tr></thead>
+    <tbody>
+    {% for b in page_obj %}
+        <tr>
+            <td>{% if b.cover %}<img src="{{ b.cover.url }}" style="height:50px" class="rounded">{% else %}<span class="text-muted small">—</span>{% endif %}</td>
+            <td>{{ b.book_no }}</td>
+            <td>{{ b.name }}</td>
+            <td>{{ b.author.name }}</td>
+            <td>{{ b.category.name }}</td>
+            <td>{{ b.price }}</td>
+            <td>{{ b.copies_available }}</td>
+            <td><img src="{% url 'book_qr' b.pk %}" style="height:40px"></td>
+            <td>
+                <a href="{% url 'edit_book' b.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                <a href="{% url 'delete_book' b.pk %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this book?')">Delete</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="9" class="text-center">No books found.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% include "library/_pagination.html" with page_obj=page_obj qs=qs %}
+{% endblock %}

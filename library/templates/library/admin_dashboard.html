@@ -1,0 +1,107 @@
+{% extends "library/base.html" %}
+{% load static %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="row g-3">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">Registered Users</div>
+            <div class="card-body">
+                <p class="card-text">Total users: <strong>{{ user_count }}</strong></p>
+                <a class="btn btn-danger btn-sm" href="{% url 'registered_users' %}">View Users</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">Total Books</div>
+            <div class="card-body">
+                <p class="card-text">Books available: <strong>{{ book_count }}</strong></p>
+                <a class="btn btn-success btn-sm" href="{% url 'manage_books' %}">View Books</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">Categories</div>
+            <div class="card-body">
+                <p class="card-text">Categories: <strong>{{ category_count }}</strong></p>
+                <a class="btn btn-warning btn-sm" href="{% url 'manage_categories' %}">View Categories</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">Authors</div>
+            <div class="card-body">
+                <p class="card-text">Authors: <strong>{{ author_count }}</strong></p>
+                <a class="btn btn-primary btn-sm" href="{% url 'manage_authors' %}">View Authors</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row g-3 mt-1">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">Books Issued</div>
+            <div class="card-body">
+                <p class="card-text">Currently issued: <strong>{{ issued_count }}</strong></p>
+                <a class="btn btn-success btn-sm" href="{% url 'issue_book' %}">Manage Issues</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-danger">
+            <div class="card-header text-danger">Defaulters</div>
+            <div class="card-body">
+                <p class="card-text">Overdue right now: <strong>{{ defaulter_count }}</strong></p>
+                <a class="btn btn-outline-danger btn-sm" href="{% url 'defaulter_list' %}">View Defaulters</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">Pending Requests</div>
+            <div class="card-body">
+                <p class="card-text">Awaiting review: <strong>{{ pending_request_count }}</strong></p>
+                <a class="btn btn-outline-primary btn-sm" href="{% url 'manage_requests' %}">View Requests</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h6>Books by Category</h6>
+            <canvas id="categoryChart" height="180"></canvas>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h6>Books Issued per Month</h6>
+            <canvas id="monthChart" height="180"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'library/chart.umd.js' %}"></script>
+<script>
+    new Chart(document.getElementById('categoryChart'), {
+        type: 'pie',
+        data: {
+            labels: {{ category_labels|safe }},
+            datasets: [{ data: {{ category_data|safe }}, backgroundColor: ['#1E3A5F','#C9972C','#5B9BD5','#70AD47','#A5A5A5','#264478'] }]
+        },
+        options: { responsive: true }
+    });
+    new Chart(document.getElementById('monthChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ month_labels|safe }},
+            datasets: [{ label: 'Books Issued', data: {{ month_data|safe }}, backgroundColor: '#1E3A5F' }]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+    });
+</script>
+{% endblock %}

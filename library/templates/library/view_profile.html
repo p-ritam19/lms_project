@@ -1,0 +1,16 @@
+{% extends "library/base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card p-4">
+            <h4 class="text-center mb-4">Profile Detail</h4>
+            <p><strong>Name:</strong> {{ user.first_name|default:user.username }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Mobile:</strong> {{ profile.mobile|default:"-" }}</p>
+            <p><strong>Address:</strong> {{ profile.address|default:"-" }}</p>
+            <a href="{% url 'edit_profile' %}" class="btn btn-primary">Edit Profile</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

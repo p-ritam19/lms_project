@@ -1,0 +1,33 @@
+{% extends "library/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">Books Issued</div>
+            <div class="card-body">
+                <p class="card-text">Number of books currently issued: <strong>{{ issued_count }}</strong></p>
+                <a class="btn btn-success" href="{% url 'view_issued_books' %}">View Issued Books</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">Browse the Catalogue</div>
+            <div class="card-body">
+                <p class="card-text">Search books by title, author, or category.</p>
+                <a class="btn btn-primary" href="{% url 'search_books' %}">Browse Books</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">My Requests</div>
+            <div class="card-body">
+                <p class="card-text">Pending reservation/renewal requests: <strong>{{ pending_requests }}</strong></p>
+                <a class="btn btn-outline-primary" href="{% url 'my_requests' %}">View Requests</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

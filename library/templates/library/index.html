@@ -1,0 +1,87 @@
+{% extends "library/base.html" %}
+{% load static %}
+{% block title %}User Login{% endblock %}
+{% block content %}
+<style>
+    .user-login-wrapper {
+        background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('{% static "library/images/login_bg.jpg" %}');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    .user-login-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 10px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+    .user-info-box {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 20px;
+        border-radius: 10px;
+        margin-right: 20px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+    .user-info-box h5 {
+        color: #333;
+        font-weight: 600;
+        margin-top: 15px;
+    }
+    .user-info-box:first-child h5 {
+        margin-top: 0;
+    }
+    .user-info-box p, .user-info-box li {
+        color: #555;
+    }
+</style>
+<div class="user-login-wrapper">
+    <div class="row" style="width: 100%; max-width: 1000px;">
+        <div class="col-md-4">
+            <div class="user-info-box">
+                <h5>Today's Quote</h5>
+                <p class="fst-italic">"There is more treasure in books than in all the pirate's loot on Treasure Island."</p>
+                <p>~ Walt Disney</p>
+                <h5>Library Timing</h5>
+                <ul>
+                    <li>Opening: 9:00 AM</li>
+                    <li>Closing: 8:00 PM</li>
+                </ul>
+                <h5>What We Provide</h5>
+                <ul>
+                    <li>AC Rooms</li>
+                    <li>Free Wi-Fi</li>
+                    <li>Learning Environment</li>
+                    <li>Discussion Room</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card p-4 user-login-card">
+                <h3 class="text-center mb-4" style="color: #333;">User Login</h3>
+                {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Email ID</label>
+                        {{ form.email }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        {{ form.password }}
+                    </div>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                    <a href="{% url 'signup' %}" class="ms-2">Signup now!</a>
+                    <br><br>
+                    <div class="text-center">
+                        <a href="{% url 'forgot_password' %}" class="text-decoration-none">Forgot Password?</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
